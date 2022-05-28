@@ -1,0 +1,4 @@
+https://computergraphics.stackexchange.com/questions/9938/how-does-uv-unwrapping-work
+https://github.com/liminchen/OptCuts
+git clone https://github.com/liminchen/OptCuts
+build it
