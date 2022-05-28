@@ -12,17 +12,29 @@ from common.schema.updates import JsonUpdates
 
 T = TypeVar('T')
 
-class BaseRepository(Generic[T], BaseModel):
+class BaseRepository(Generic[T]): # BaseModel
     collection: pymongo.collection
     constructor: Callable[[Dict], T]
     desc: str
+    
+    # TODO: Remove this:
+    def __init__(
+        self,
+        collection: pymongo.collection,
+        constructor: Callable[[Dict], T],
+        desc: str
+    ) -> None:
+        super().__init__()
+        self.collection = collection
+        self.constructor = constructor
+        self.desc = desc
     
     def list(self, filter: Optional[Dict] = None) -> List[T]:
         if filter is None:
             cursor = self.collection.find()
         else:
             cursor = self.collection.find(filter)
-        return [self.constructor(**document) for document in cursor]
+        return [self.constructor(document) for document in cursor]
     
     def exists(self, id: str) -> bool:
         document = self.collection.find_one({"_id": id})
@@ -36,7 +48,7 @@ class BaseRepository(Generic[T], BaseModel):
         document = self.collection.find_one({"_id": id})
         if not document:
             raise NotFoundException(f"Unable to find {self.desc} {id}")
-        return self.constructor(**document)
+        return self.constructor(document)
 
     def create(self, data: Optional[Dict] = None) -> T:
         uuid = create_uuid()
@@ -73,3 +85,6 @@ class BaseRepository(Generic[T], BaseModel):
         result = self.collection.delete_one({"_id": id})
         if not result.deleted_count:
             raise NotFoundException(f"Unable to delete {self.desc} {id}")
+    
+    class Config:
+        arbitrary_types_allowed = True

@@ -8,8 +8,8 @@ from serve.exceptions import (
     get_exception_responses,
     NotFoundException,
 )
-from src.serve.repositories.video_repo import repository
-from src.common.model.video_info import VideoInfo
+from serve.repositories.video_repo import repository
+from common.model.video_info import VideoInfo
 
 from fastapi import Response
 from fastapi import Header

@@ -1,14 +1,11 @@
 from typing import List, Optional
-from contextlib import suppress
-import dateutil
-import datetime
 import pydantic
 from pydantic import Field
 
 from common.utils import create_uuid, get_time
 
 from common.model.base import BaseModel
-from common.schema.fields import Details
+from common.model.base import Fields
 
 
 class CreateProjectArgs(BaseModel):
@@ -26,10 +23,10 @@ class ProjectUpdates(BaseModel):
 
 
 class Project(BaseModel):
-    id: str = Field(**Details.identifer, default_factory=create_uuid)
+    id: str = Field(**Fields.identifer, default_factory=create_uuid)
     name: str
-    created: int = Field(**Details.unix_ts, default_factory=get_time)
-    updated: int = Field(**Details.unix_ts, default_factory=get_time)
+    created: int = Field(**Fields.unix_ts, default_factory=get_time)
+    updated: int = Field(**Fields.unix_ts, default_factory=get_time)
 
     @pydantic.root_validator(pre=True)
     @classmethod

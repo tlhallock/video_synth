@@ -8,7 +8,9 @@ from serve.repositories.base_repo import BaseRepository
 
 
 def project_constructor(json: Dict) -> Project:
-    return Project(**json)
+    id = json["_id"]
+    del json["_id"]
+    return Project(**json, id=id)
 
 
 repository: BaseRepository[Project] = BaseRepository(

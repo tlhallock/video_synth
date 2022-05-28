@@ -9,12 +9,7 @@ from typing import List, Optional
 import numpy as np
 import math
 
-from ..schema.base import BaseModel, FloatingPointType
-from ..schema.fields import ProjectFields
-from ..schema.person_address import 
-
-
-__all__ = ("ProjectUpdates", "Project", "Projects", "CreateProjectArgs")
+from serve.model.base import BaseModel, FloatingPointType, Fields
 
 
 class Resolution(BaseModel):
@@ -55,10 +50,10 @@ class Cameras:
     
     DEFAULT_RESOLUTION = RESOLUTIONS[3]
     
-	@staticmethod
-	def print_resolutions():
-		for res in Cameras.RESOLUTIONS:
-			print(res, res[0] * res[1])
+    @staticmethod
+    def print_resolutions():
+        for res in Cameras.RESOLUTIONS:
+            print(res, res[0] * res[1])
 
 
 class BaseCamera(BaseModel):
@@ -162,60 +157,9 @@ class AddCameraArgs(BaseModel):
         description="Optional name of the camera",
         example="camera 1",
     )
-    
-
-
-class ProjectUpdates(BaseModel):
-    name: Optional[str] = ProjectFields.name
-    address: Optional[Address] = ProjectFields.address_update
-    birth: Optional[datetime.date] = ProjectFields.birth
-
-    def dict(self, **kwargs):
-        # The "birth" field must be converted to string (isoformat) when exporting to dict (for Mongo)
-        # TODO Better way to do this? (automatic conversion can be done with Config.json_encoders, but not available for dict
-        d = super().dict(**kwargs)
-        with suppress(KeyError):
-            d["birth"] = d.pop("birth").isoformat()
-        return d
-
-
-class Project(BaseModel):
-    project_id: str = ProjectFields.project_id
-    name: str = ProjectFields.name
-    age: Optional[int] = ProjectFields.age
-    created: int = ProjectFields.created
-    updated: int = ProjectFields.updated
-
-    @pydantic.root_validator(pre=True)
-    @classmethod
-    def _set_project_id(cls, data):
-        document_id = data.get("_id")
-        if document_id:
-            data["project_id"] = document_id
-        return data
-
-    @pydantic.root_validator()
-    @classmethod
-    def _set_age(cls, data):
-        birth = data.get("birth")
-        if birth:
-            today = datetime.datetime.now().date()
-            data["age"] = dateutil.relativedelta.relativedelta(today, birth).years
-        return data
-
-    class Config(BaseModel.Config):
-        extra = pydantic.Extra.ignore  # if a read document has extra fields, ignore them
-
-
-Projects = List[Project]
-
-
-
 
 
 
 class CameraType(Enum):
     PINHOLE_CAMERA = 'PINHOLE'
 
-
-class CameraType

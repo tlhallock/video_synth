@@ -8,9 +8,9 @@ import yaml
 import os
 from tqdm import tqdm
 
-from common.unit_of_work import UnitOfWork
-from common.args import create_parser
-from common.default_logging import get_logger
+from calc.common.unit_of_work import UnitOfWork
+from calc.common.args import create_parser
+from calc.common.default_logging import get_logger
 
 
 logger = get_logger(__name__)
