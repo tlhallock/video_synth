@@ -17,6 +17,7 @@ from fastapi.responses import FileResponse
 # from fastapi.templating import Jinja2Templates
 
 CHUNK_SIZE = 1024*1024
+BYTES_PER_RESPONSE = 100000
 
 
 router = APIRouter(
@@ -56,8 +57,6 @@ def _sync() -> None:
     repository.synchronize()
 
 
-
-
 # https://github.com/tiangolo/fastapi/issues/1240
 @router.get(
     "/{checksum}/frame/{frame_no}",
@@ -70,31 +69,6 @@ async def _frame(checksum: str, frame_no: int):
         path,
         media_type="image/png",
         filename=f"{checksum}_{frame_no:05d}.png")
-
-
-
-
-# @router.get(
-#     "/{checksum}/play",
-#     description="Play the video",
-#     status_code=statuscode.HTTP_206_PARTIAL_CONTENT,
-# )
-# async def _play(checksum: str):
-#     info = repository.get(checksum)
-    
-#     def iterfile():
-#         with open(info.path, mode="rb") as file_like:
-#             yield from file_like
-    
-#     # return StreamingResponse(iterfile(), media_type="video/mp4")
-
-#     return FileResponse(
-#         info.path,
-#         media_type="video/mp4",
-#         filename=f"{checksum}.mp4",
-#     )
-
-BYTES_PER_RESPONSE = 100000
 
 
 def chunk_generator_from_stream(path, chunk_size, start, size):

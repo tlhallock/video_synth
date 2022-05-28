@@ -17,7 +17,6 @@ from serve.exceptions import (
 from serve.schemas.project import router as project_router
 from serve.repositories.project_repo import repository as project_repo
 
-
 from serve.repositories.thing_repo import repository
 
 
