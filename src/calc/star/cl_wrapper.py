@@ -4,25 +4,6 @@ import numpy as np
 import cv2
 import rendering
 
-# STATIC_LIB = .... /opencl/my_build/librendering.so"
-
-    # dll = ctypes.CDLL(STATIC_LIB)
-    # faces = faces[:500, :]
-    # vertices = np.array(
-    #     [[
-    #         [1, -1, 2],
-    #         [-1, -1, 2],
-    #         [0, 1, 2],
-    #     ]],
-    #     dtype=np.float32
-    # )
-    # faces = np.array(
-    #     [
-    #         [0, 1, 2]
-    #     ],
-    #     dtype=np.uint64
-    # )
-    
 
 def opencl_render(vertices: np.ndarray, faces: np.ndarray, resolution=None):
     batch_size = vertices.shape[0]
