@@ -20,39 +20,6 @@ class FarnebackParams(BaseModel):
     block_size: int
 
 
-class MatWriter(BaseModel):
-    block_size: int
-    root: Path
-    suffix: str = "matrix"
-    
-    mats: List[np.ndarray] = Field(default_factory=list)
-    paths: List[Path] = Field(default_factory=list)
-    count: int = 0
-    
-    # enter/exit
-    
-    def write(self):
-        if len(self.mats) > 0:
-            outpath=self.root / f"{self.count:05d}_{self.suffix}.npy"
-            np.save(
-                file=outpath,
-                arr=np.array(self.mats, dtype=np.float64),  # TODO
-                allow_pickle=False,
-                fix_imports=False)
-            self.count += 1
-            self.paths.append(outpath)
-        self.mats.clear()
-    
-    def receive(self, mat: np.ndarray):
-        self.mats.append(mat)
-        if len(self.mats) > self.block_size:
-            self.write()
-        
-    class Config:
-        arbitrary_types_allowed = True
-    
-
-
 def process_video(params: FarnebackParams, input_file: Path, output_directory: Path) -> None:
     logger.info(
         f"Processing {str(input_file)} to {str(output_directory)}")

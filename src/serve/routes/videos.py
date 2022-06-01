@@ -8,12 +8,15 @@ from serve.exceptions import (
     get_exception_responses,
     NotFoundException,
 )
-from serve.repositories.video_repo import repository
+from serve.repositories.videos import repository
 from common.model.video_info import VideoInfo
 
 from fastapi import Response
 from fastapi import Header
 from fastapi.responses import FileResponse
+
+from common.model.fs_resource import SynchonizeResult
+from common.model.search import Search
 # from fastapi.templating import Jinja2Templates
 
 CHUNK_SIZE = 1024*1024
@@ -34,8 +37,16 @@ router = APIRouter(
     description="List all the available videos",
 )
 def _list() -> List[VideoInfo]:
-    # TODO Filters
     return repository.list()
+
+
+@router.get(
+    "/search",
+    response_model=List[VideoInfo],
+    description="Search for a project with a regular expression",
+)
+def _search(query: Search):
+    return repository.matching(query)
 
 
 @router.get(
@@ -45,16 +56,27 @@ def _list() -> List[VideoInfo]:
     responses=get_exception_responses(NotFoundException),
 )
 def _get(checksum: str) -> VideoInfo:
-    return repository.get(checksum)
+    return repository.get_by_checksum(checksum)
 
 
 @router.patch(
+    "/{id}",
+    description="Synchronize one video with the contents on disk",
+    response_model=List[SynchonizeResult],
+    status_code=statuscode.HTTP_200_OK,
+)
+def _sync_entry(id: str) -> None:
+    return repository.synchronize_entry(id)
+    
+
+@router.patch(
     "/",
-    description="Synchronize the video store with the contents on disk",
-    status_code=statuscode.HTTP_204_NO_CONTENT,
+    description="Synchronize the video collection with the contents on disk",
+    response_model=SynchonizeResult,
+    status_code=statuscode.HTTP_200_OK,
 )
 def _sync() -> None:
-    repository.synchronize()
+    return repository.synchronize()
 
 
 # https://github.com/tiangolo/fastapi/issues/1240
@@ -91,7 +113,7 @@ def chunk_generator_from_stream(path, chunk_size, start, size):
     status_code=statuscode.HTTP_206_PARTIAL_CONTENT,
 )
 def stream(checksum: str, req: Request):
-    info = repository.get(checksum)
+    info = repository.get_by_checksum(checksum)
     asked = req.headers.get("Range")
 
     total_size = info.size

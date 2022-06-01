@@ -1,6 +1,7 @@
-from typing import List
-from fastapi import APIRouter, Depends
+from typing import List, Optional
+from fastapi import APIRouter
 from fastapi import status as statuscode
+import json
 
 from common.model.thing import (
     AddThingArgs,
@@ -14,10 +15,11 @@ from serve.exceptions import (
     AlreadyExistsException,
 )
 
-from serve.routes.project import router as project_router
-from serve.repositories.project_repo import repository as project_repo
+from serve.routes.projects import router as project_router
+from serve.repositories.projects import repository as project_repo
 
-from serve.repositories.thing_repo import repository
+from serve.repositories.things import repository
+from src.common.model.search import Search
 
 
 @project_router.get(
@@ -25,21 +27,9 @@ from serve.repositories.thing_repo import repository
     response_model=List[Thing],
     description="List the things in a project",
 )
-def _list(project):
+def _list_under(project):
     project_repo.assert_exists(project)
-    return repository.list({project: project})
-
-
-@project_router.post(
-    "/{project}/things",
-    description="Add a new thing to a project",
-    response_model=Thing,
-    status_code=statuscode.HTTP_201_CREATED,
-    responses=get_exception_responses(AlreadyExistsException),
-)
-def _create(project: str, args: AddThingArgs):
-    return repository.create(data=dict(**args.dict(), project=project))
-
+    return repository.list(dict(project=project))
 
 
 router = APIRouter(
@@ -51,6 +41,24 @@ router = APIRouter(
 
 
 @router.get(
+    "/",
+    response_model=List[Thing],
+    description="List all the things",
+)
+def _list():
+    return repository.list()
+
+
+@router.get(
+    "/search",
+    response_model=List[Thing],
+    description="Search for a thing with a regular expression on the id.",
+)
+def _search(query: Search):
+    return repository.matching(query)
+
+
+@router.get(
     "/{id}",
     response_model=Thing,
     description="Get a single thing by its unique ID",
@@ -59,6 +67,17 @@ router = APIRouter(
 def _get(id: str):
     return repository.get(id)
 
+
+@router.post(
+    "/",
+    description="Add a new thing to a project",
+    response_model=Thing,
+    status_code=statuscode.HTTP_201_CREATED,
+    responses=get_exception_responses(AlreadyExistsException),
+)
+def _create(args: AddThingArgs):
+    thing = args.create()
+    return repository.create(document=thing)
 
 
 @router.patch(
@@ -78,5 +97,5 @@ def _update(id: str, update: ThingUpdates):
     responses=get_exception_responses(NotFoundException),
 )
 def _delete(id: str):
-    repository.delete(id)
+    repository.my_delete(id)
 

@@ -1,5 +1,5 @@
 
-from typing import Optional, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 from pydantic import BaseModel, validator
 import cv2
@@ -7,6 +7,10 @@ import random
 import hashlib
 from pathlib import Path
 import numpy as np
+
+from common.model.file_info import FileInfo, StatCache
+from common.model.fs_resource import SingleFileResource
+from common.model.base import revise_dict
 
 
 class VCGuard:
@@ -40,28 +44,6 @@ class VCGuard:
         
 
 
-
-def _calculate_checksum(path: Path) -> str:
-    sha256_hash = hashlib.sha256()
-    with path.open("rb") as f:
-        for byte_block in iter(lambda: f.read(4096), b""):
-            sha256_hash.update(byte_block)
-        return sha256_hash.hexdigest()
-
-
-def _get_stat_info(path: Path) -> dict:
-    result = path.stat()
-    return dict(
-        mode=result.st_mode, # int
-        inode=result.st_ino, # int
-        device=result.st_dev, # int
-        size=result.st_size, # int
-        modified_time=result.st_mtime,
-        # creation_time=result.st_birthtime,
-        # filesytem=result.st_fstype,
-    )
-
-
 def _swap(i: int) -> int:
     if i == 0:
         return 1
@@ -76,7 +58,8 @@ def _get_cv_info(path: Path) -> dict:
     with guard as cap:
         frame_no = random.randint(0, guard.frame_count) #  TODO: LOL
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_no)
-        shape = guard.get_frame(frame_no)
+        frame = guard.get_frame(frame_no)
+        shape = frame.shape
         revised_shape = tuple(
             shape[_swap(idx)]
             for idx in range(len(shape))
@@ -115,22 +98,15 @@ def _generate_images(path: Path, num_frames: int, frame_count: int):
         # yield t
 
 
-class VideoInfo(BaseModel):
-    path: str
-    resolution: Tuple[int, int, int]
+class VideoInfo(SingleFileResource):
+    resolution: Sequence[int]
     frame_count: int
-    checksum: str
     
-    mode: int
-    inode: int
-    device: int
-    size: int
-    modified_time: int
     url: Optional[str]
     
     @validator('url', always=True)
     def make_url(cls, v, values) -> str:
-        checksum = values["checksum"]
+        checksum = values["info"].checksum
         return f"http://localhost:5000/videos/play/{checksum}"
     
     def get_frame(self, frame_no: int) -> np.ndarray:
@@ -141,13 +117,18 @@ class VideoInfo(BaseModel):
     def generate_images(self, num_frames: int):
         yield from _generate_images(
             self.path, num_frames, self.frame_count)
+        
+    # def dict(self, *args, **kwargs) -> Dict[str, Any]:
+    #     print("This method is called.\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+    #     return revise_dict(super().dict(*args, **kwargs))
 
     @staticmethod
-    def from_path(path: Path) -> "VideoInfo":
+    def from_path(path: Path, cache: Optional[StatCache] = None) -> "VideoInfo":
         return VideoInfo(
-            path=str(path),  # TODO
+            path=path,
+            info=FileInfo.read_file_info(
+                path,
+                path.stat() if cache is None else cache.get_stat(path)),
             **_get_cv_info(path),
-            **_get_stat_info(path),
-            checksum=_calculate_checksum(path),
         )
 

@@ -1,78 +1,97 @@
-from optparse import Option
 from pydantic import Field, Json
-from typing import List, Optional, Sequence
-from contextlib import suppress
-import dateutil
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 import datetime
 import pydantic
 from enum import Enum, auto
 from typing import List, Optional
-import numpy as np
-import math
+from datetime import datetime
 
-from common.utils import create_uuid, get_time, get_uuid
+from common.model.base import BaseModel, Fields
+from common.model.frame_map import FrameMap
+from pydantic_mongo import ObjectIdField
 
-from .base import BaseModel
-from .fields import Details
+from common.model.storable import Storable
+
+
+class StreamType(Enum):
+    ORIGINAL = "source"
+    INTERMEDIATE = "intermediate"
+    RENDERED = "rendered"
+    DEBUG = "debug"
+    
+
+class StreamData(BaseModel):
+    video_id: str
+    stream_type: StreamType
+    frame_map: FrameMap
+    # -1 for source, 0 for background, 1... for models?
+    layer: int
+    
+
+
+class CameraData(BaseModel):
+    # source camera?
+    intrinsics: str = "not implemented"
+    
+    # pinhole camera
+    resolution: Sequence[int]
+    physical_dims: Tuple[float, float]
+    focal_length: float
+    
+    poses: Optional[str] = None
+    pose_map: FrameMap
+    
+    
+class ModelData(BaseModel):
+    # Assumed to be the STAR human model for now...
+    texture: Optional[str] = None
+    betas: Optional[str] = None
+    poses: Optional[str] = None
+    pose_map: FrameMap
+    layer: Optional[int] = None
+    
+
+class LightData(BaseModel):
+    intensity: float = 1
+    color: Tuple[float, float, float] = Field(default_factory=lambda:tuple(1.0, 1.0, 1.0))
+    
+    pose: Optional[str] = None
+    pose_map: FrameMap
+
+
+class CalculationData(BaseModel):
+    calculation_name: str
+    # More info...
+    array: str
+    map: FrameMap
+    
 
 
 class ThingType(Enum):
-    STREAM = auto
-        # can be original(source), rendered, or intermediate, debug
-        # has a map to active frames
-        # could be used as a background
-        # has a path on disk
-        # can have a layer, if it is intermediate
-    CAMERA = auto
-        # has a map to active frames
-        # has an intrinsics
-        # has a pose per frame
-        # can be approximate a real camera?, or be a pinhole camera
-    MODEL = auto
-        # has a map to active frames
-        # may have textures
-        # may have global parameters
-        # has a layer
-    LIGHT = auto
-        # has a map to active frames
-        # has an intensity
-        # maybe pose
-        # maybe it has a color
-    CALC = auto
-        # has a map to active frames
-        # has an array
-        # has a name
-        # represents a namespace for 
+    STREAM = "video"
+    CAMERA = "camera"
+    MODEL = "model"
+    LIGHT = "light"
+    CALC = "calculation"
+    
 
-
-# TODO: wrote this thinking it was a thing
-class AddThingArgs(BaseModel):
-    id: str = Field(**Details.identifer)
-    project: str = Field(**Details.identifer)
-    created: int = Field(**Details.unix_ts) #, default_factory=get_time)
-    updated: int = Field(**Details.unix_ts) #, default_factory=get_time)
+class Thing(Storable):
+    project: ObjectIdField = None
     
     type: ThingType
-    implementation: str
-    implmentation_version: str
+    implementation: Optional[str] = None
+    implementation_version: Optional[str] = None
     revision: int
     
-    name: Optional[str]
-    data: str
-    # params: Json
+    name: Optional[str] = None
+    data: Union[
+        StreamData,
+        CameraData,
+        ModelData,
+        LightData,
+        CalculationData,
+    ]
     
-
-class Thing(BaseModel):
-    id: str = Field(**Details.identifer)
-    project_id: str = Field(**Details.identifer)
-    
-    category: str
-    type: str
-    model_version: str
-    name: Optional[str]
-    params: str
-    # params: Json  # Could be a union of currently supported types
-
     @pydantic.root_validator(pre=True)
     @classmethod
     def _set_id(cls, data):
@@ -82,8 +101,32 @@ class Thing(BaseModel):
         return data
 
 
+class AddThingArgs(BaseModel):
+    project: ObjectIdField = None
+    
+    type: ThingType
+    
+    # Do these belong here?
+    implementation: Optional[str] = None
+    implementation_version: Optional[str] = None
+    
+    name: Optional[str] = None
+    data: Optional[Json] = None
+    
+    data: Union[
+        StreamData,
+        CameraData,
+        ModelData,
+        LightData,
+        CalculationData,
+    ]
+    
+    def create(self) -> Thing:
+        return Thing(**self.dict(), revision=0)
+
+
 class ThingUpdates(BaseModel):
-    id: str = Field(**Details.identifer)
+    project: ObjectIdField = None
     
     category: Optional[str]
     type: Optional[str]

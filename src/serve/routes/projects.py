@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter
 from fastapi import status as statuscode
 
@@ -13,7 +13,8 @@ from serve.exceptions import (
     NotFoundException,
     AlreadyExistsException,
 )
-from serve.repositories.project_repo import repository
+from serve.repositories.projects import repository
+from common.model.search import Search
 
 
 
@@ -31,8 +32,16 @@ router = APIRouter(
     description="List all the available projects",
 )
 def _list():
-    # TODO Filters
     return repository.list()
+
+
+@router.get(
+    "/search",
+    response_model=List[Project],
+    description="Search for a project with a regular expression",
+)
+def _search(query: Search):
+    return repository.matching(query)
 
 
 @router.get(
@@ -53,7 +62,10 @@ def _get(id: str):
     responses=get_exception_responses(AlreadyExistsException),
 )
 def _create(args: CreateProjectArgs):
-    return repository.create(data=args.dict())
+    # TODO: create unique name constraint
+    # TODO: Already exists exception
+    project = args.create()
+    return repository.create(project)
 
 
 @router.patch(
@@ -73,4 +85,4 @@ def _update(id: str, update: ProjectUpdates):
     responses=get_exception_responses(NotFoundException),
 )
 def _delete(id: str):
-    repository.delete(id)
+    repository.my_delete(id)
