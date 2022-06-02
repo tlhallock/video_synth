@@ -7,7 +7,7 @@ import pydantic
 import pathlib
 
 
-from common.utils import get_time, create_uuid
+from common.utils.utils import get_time, create_uuid
 
 
 def _patch_value(key: str, value: Any) -> Any:

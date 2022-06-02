@@ -6,7 +6,7 @@ from bson import ObjectId
 import pymongo
 
 from common.model.base import BaseModel
-from common.utils import get_time, create_uuid
+from common.utils.utils import get_time, create_uuid
 from serve.exceptions import NotFoundException
 from common.schema.updates import JsonUpdates
 from common.model.storable import Storable
@@ -55,6 +55,7 @@ class BaseRepository(AbstractRepository[T]):
         self.get(id)
     
     def get(self, id: str) -> T:
+        print("About to look for", id)
         document = self.find_one_by_id(id)
         if not document:
             raise NotFoundException(f"Unable to find {self.desc} {id}")

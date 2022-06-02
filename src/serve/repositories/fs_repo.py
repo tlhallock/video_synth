@@ -7,7 +7,7 @@ from pathlib import Path
 import pymongo
 
 from common.model.base import BaseModel
-from common.utils import get_time, create_uuid
+from common.utils.utils import get_time, create_uuid
 from serve.exceptions import NotFoundException
 from common.schema.updates import JsonUpdates
 from serve.repositories.base import BaseRepository

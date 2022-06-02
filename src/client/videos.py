@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import requests
 
-from cli.client.base import BaseClient
+from client.base import BaseClient
 
 from common.model.video_info import VideoInfo
 from common.model.fs_resource import SynchonizeResult

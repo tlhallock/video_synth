@@ -5,9 +5,9 @@ import click
 import yaml
 
 from common.model.array_info import ArrayInfo, CreateArrayInfo
-from cli.client.arrays import ArraysClient as Client
-from cli.client.projects import ProjectsClient
-from cli.client.things import ThingsClient
+from client.arrays import ArraysClient as Client
+from client.projects import ProjectsClient
+from client.things import ThingsClient
 from cli.formats.formats import show_list, show_single
 from cli.options import list_output
 from cli.aliased_group import AliasedGroup

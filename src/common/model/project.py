@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 import pydantic
 from pydantic import Field
 
-from common.utils import create_uuid, get_time
+from common.utils.utils import create_uuid, get_time
 
 from common.model.base import BaseModel
 from common.model.base import Fields

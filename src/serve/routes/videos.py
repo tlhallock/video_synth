@@ -50,13 +50,14 @@ def _search(query: Search):
 
 
 @router.get(
-    "/{checksum}",
+    "/{id}",
     response_model=VideoInfo,
-    description="Get a single video by its unique checksum",
+    description="Get a single video by its unique id",
     responses=get_exception_responses(NotFoundException),
 )
-def _get(checksum: str) -> VideoInfo:
-    return repository.get_by_checksum(checksum)
+def _get(id: str) -> VideoInfo:
+    return repository.get(id)
+    # return repository.get_by_checksum(checksum)
 
 
 @router.patch(

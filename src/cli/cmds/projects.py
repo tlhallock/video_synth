@@ -2,7 +2,7 @@
 import click
 
 from common.model.project import Project
-from cli.client.projects import ProjectsClient as Client
+from client.projects import ProjectsClient as Client
 from cli.formats.formats import show_list, show_single
 from cli.options import list_output
 from cli.aliased_group import AliasedGroup

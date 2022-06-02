@@ -13,6 +13,7 @@ from serve.cfg import api_settings
 
 from common.model.base import Fields
 from common.utils.matrix_writer import MatrixWriter
+from pydantic_mongo import ObjectIdField
 
 
 class DataType(Enum):
@@ -25,10 +26,7 @@ class DataType(Enum):
 
 
 class ArrayInfo(MultiFileResource):
-    id: str = Field(**Fields.identifer)
-    thing: str = Field(**Fields.identifer)
-    created: int = Field(**Fields.unix_ts) #, default_factory=get_time)
-    updated: int = Field(**Fields.unix_ts) #, default_factory=get_time)
+    thing: ObjectIdField
     
     variable_path: str
     interpretation: Optional[str] = None
@@ -92,7 +90,7 @@ class MatrixWriterGuard:
         
     
     @staticmethod
-    def open(array: ArrayInfo) -> MatrixWriterGuard:
+    def open(array: ArrayInfo) -> "MatrixWriterGuard":
         return MatrixWriterGuard(
             array=array,
             writer=MatrixWriter(

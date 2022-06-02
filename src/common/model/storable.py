@@ -8,7 +8,7 @@ from pydantic import Field, validator
 from pydantic_mongo import ObjectIdField
 
 from common.model.base import Fields
-from common.utils import get_time
+from common.utils.utils import get_time
 
 from common.model.base import BaseModel
 

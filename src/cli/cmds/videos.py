@@ -4,10 +4,9 @@ from typing import Optional
 import click
 import yaml
 
-from common.model.thing import Thing, AddThingArgs, ThingType
-from cli.client.videos import VideosClient as Client
-from cli.client.projects import ProjectsClient
-from cli.client.things import ThingsClient
+from client.videos import VideosClient as Client
+from client.projects import ProjectsClient
+from client.things import ThingsClient
 from cli.formats.formats import show_list, show_single
 from cli.options import list_output
 from cli.aliased_group import AliasedGroup

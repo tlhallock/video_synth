@@ -5,9 +5,9 @@ import click
 import yaml
 
 from common.model.thing import StreamData, StreamType, Thing, AddThingArgs, ThingType
-from cli.client.things import ThingsClient as Client
-from cli.client.projects import ProjectsClient
-from cli.client.videos import VideosClient
+from client.things import ThingsClient as Client
+from client.projects import ProjectsClient
+from client.videos import VideosClient
 from cli.formats.formats import show_list, show_single
 from cli.options import list_output
 from cli.aliased_group import AliasedGroup

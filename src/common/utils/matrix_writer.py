@@ -6,8 +6,7 @@ import numpy as np
 
 from pydantic import BaseModel, Field
 
-from common.model.array_info import ArrayInfo
-from src.common.model.file_info import FileInfo, StatCache
+from common.model.file_info import FileInfo, StatCache
 
 
 class MatrixWriter(BaseModel):

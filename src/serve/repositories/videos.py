@@ -54,7 +54,7 @@ class VideosRepository(FileSystemRepo[VideoInfo]):
         return VideoInfo.from_path(path, cache)
     
     def get_by_checksum(self, checksum: str) -> VideoInfo:
-        document = self.collection.find_one({"info.checksum": {"$eq": checksum}})
+        document = self.get_collection().find_one({"info.checksum": {"$eq": checksum}})
         if not document:
             raise NotFoundException(f"Unable to find {self.desc} {id}")
         return self.construct(document)

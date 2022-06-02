@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from cli.client.base import BaseClient
+from client.base import BaseClient
 
 from common.model.thing import (
     AddThingArgs,
